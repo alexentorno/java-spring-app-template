@@ -21,7 +21,7 @@ dist/
 
 # Maven
 target/
-dist/
+
 
 # JetBrains IDE
 .idea/
@@ -54,7 +54,7 @@ Thumbs.db
 /.idea
 
 *.iml
-*.class
-*.jar
-*.war
+
+
+
 
