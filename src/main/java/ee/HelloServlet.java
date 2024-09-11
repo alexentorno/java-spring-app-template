@@ -1,4 +1,4 @@
-package src.main.java.ee.HelloServlet.java;
+package src.main.java.ee;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
