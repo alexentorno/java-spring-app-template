@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+    id 'war' // Use the war plugin
+    id 'org.gretty' version '4.1.5' // Gretty for running the web app
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    providedCompile 'jakarta.servlet:jakarta.servlet-api:6.1.0'
+}
+
+gretty {
+    servletContainer = 'jetty11' // Or 'tomcat9'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+war {
+    archiveFileName = 'icd0011.war' // Name of the WAR file
+    from 'src/main/webapp' // Use 'from' instead of webAppDirectory
+}
