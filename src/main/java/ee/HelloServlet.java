@@ -1,3 +1,5 @@
+package src.main.java.ee.HelloServlet.java;
+
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,8 +10,12 @@ import java.io.IOException;
 public class HelloServlet extends HttpServlet {
 
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void doGet(HttpServletRequest request,
+                      HttpServletResponse response)
+            throws IOException {
+
         response.setContentType("application/json");
+
         response.getWriter().print("{}");
     }
 }
