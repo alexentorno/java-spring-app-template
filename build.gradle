@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'war' // Use the war plugin
-    id 'org.gretty' version '4.1.5' // Gretty for running the web app
+    id 'war'
+    id 'org.gretty' version '4.1.5'
 }
 
 repositories {
@@ -13,7 +13,7 @@ dependencies {
 }
 
 gretty {
-    servletContainer = 'jetty11' // Or 'tomcat9'
+    servletContainer = 'jetty11'
 }
 
 tasks.withType(JavaCompile) {
