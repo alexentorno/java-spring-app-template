@@ -21,6 +21,10 @@ tasks.withType(JavaCompile) {
 }
 
 war {
-    archiveFileName = 'icd0011.war' // Name of the WAR file
-    from 'src/main/webapp' // Use 'from' instead of webAppDirectory
+    archiveFileName = 'icd0011.war'
+    from 'src/main/webapp'
+}
+
+application {
+    mainClass = 'ee.HelloServlet'
 }
