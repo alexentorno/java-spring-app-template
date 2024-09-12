@@ -214,7 +214,7 @@ DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
 set -- \
         "-Dorg.gradle.appname=$APP_BASE_NAME" \
         -classpath "$CLASSPATH" \
-        org.gradle.wrapper.GradleWrapperMain \
+        org.gradle.wrapper.gradle-wrapper \
         "$@"
 
 # Stop when "xargs" is not available.
