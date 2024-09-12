@@ -25,6 +25,3 @@ war {
     from 'src/main/webapp'
 }
 
-application {
-    mainClass = 'ee.HelloServlet'
-}
