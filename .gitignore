@@ -10,7 +10,6 @@ dist/
 *.jar
 # Maven
 target/
-dist/
 # JetBrains IDE
 .idea/
 # Unit test reports
