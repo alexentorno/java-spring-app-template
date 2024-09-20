@@ -1,4 +1,4 @@
-package api.orders;
+package ee.api.orders;
 
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @WebServlet("/api/orders")
 public class OrderServlet extends HttpServlet {
-    private static final AtomicLong idGenerator = new AtomicLong(0);
+    private static final AtomicLong ID_GENERATOR = new AtomicLong(0);
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -39,7 +39,7 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
-        long newOrderId = idGenerator.incrementAndGet();
+        long newOrderId = ID_GENERATOR.incrementAndGet();
 
         StringBuilder jsonResponse = new StringBuilder("{ \"id\": \"" + newOrderId + "\"");
 
