@@ -17,8 +17,8 @@ public class OrderServlet extends HttpServlet {
     private static final AtomicLong idGenerator = new AtomicLong(0);
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String inputJson = "";
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String inputJson;
         try (BufferedReader reader = req.getReader()) {
             inputJson = reader.readLine();
         }
