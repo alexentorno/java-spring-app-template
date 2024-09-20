@@ -1,6 +1,5 @@
 package api.orders;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,18 +41,18 @@ public class OrderServlet extends HttpServlet {
 
         long newOrderId = idGenerator.incrementAndGet();
 
-        String jsonResponse = "{ \"id\": \"" + newOrderId + "\"";
+        StringBuilder jsonResponse = new StringBuilder("{ \"id\": \"" + newOrderId + "\"");
 
         for (Map.Entry<String, String> entry : parsedData.entrySet()) {
             if (entry.getKey().equals("orderNumber")) {
-                jsonResponse += ", \"" + entry.getKey() + "\": \"" + entry.getValue() + "\"";
+                jsonResponse.append(", \"").append(entry.getKey()).append("\": \"").append(entry.getValue()).append("\"");
             }
         }
-        jsonResponse += " }";
+        jsonResponse.append(" }");
 
         resp.setContentType("application/json");
         resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write(jsonResponse);
+        resp.getWriter().write(jsonResponse.toString());
     }
 
     private Map<String, String> parseJsonToMap(String json) {
