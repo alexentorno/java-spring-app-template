@@ -20,10 +20,13 @@ public class OrderServlet extends HttpServlet {
 
     private static final AtomicLong ID_GENERATOR = new AtomicLong(0);
 
+    private Object ordersFromContext;
+
     @Override
     public void init() throws ServletException {
         ServletContext context = getServletContext();
-        if (context.getAttribute("orders") == null) {
+        ordersFromContext = context.getAttribute("orders");
+        if (ordersFromContext == null) {
             context.setAttribute("orders", new HashMap<Long, Order>());
         }
     }
@@ -33,7 +36,7 @@ public class OrderServlet extends HttpServlet {
         //get context
         ServletContext context = getServletContext();
         //find orders
-        Map<Long, Order> orders = (Map<Long, Order>) context.getAttribute("orders");
+        Map<Long, Order> ordersMap = (Map<Long, Order>) ordersFromContext;
 
         ObjectMapper objectMapper = new ObjectMapper();
         Order newOrder;
@@ -55,7 +58,7 @@ public class OrderServlet extends HttpServlet {
         long newOrderId = ID_GENERATOR.incrementAndGet();
         newOrder.setId(newOrderId);  // Set the generated ID for the new order
 
-        orders.put(newOrderId, newOrder);  // Store the new order in the map
+        ordersMap.put(newOrderId, newOrder);  // Store the new order in the map
 
         // Return the newly created order in JSON format
         resp.setContentType("application/json");
@@ -66,7 +69,7 @@ public class OrderServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         ServletContext context = getServletContext();
-        Map<Long, Order> orders = (Map<Long, Order>) context.getAttribute("orders");
+        Map<Long, Order> orders = (Map<Long, Order>) ordersFromContext;
 
         String idParam = req.getParameter("id");
 
