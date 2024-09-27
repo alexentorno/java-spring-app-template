@@ -1,5 +1,8 @@
 package ee.api.orders;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,49 +14,91 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+
 @WebServlet("/api/orders")
 public class OrderServlet extends HttpServlet {
+
     private static final AtomicLong ID_GENERATOR = new AtomicLong(0);
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String inputJson;
-        try (BufferedReader reader = req.getReader()) {
-            inputJson = reader.readLine();
+    public void init() throws ServletException {
+        ServletContext context = getServletContext();
+        if (context.getAttribute("orders") == null) {
+            context.setAttribute("orders", new HashMap<Long, Order>());
         }
+    }
 
-        if (inputJson == null || inputJson.trim().isEmpty()) {
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        //get context
+        ServletContext context = getServletContext();
+        //find orders
+        Map<Long, Order> orders = (Map<Long, Order>) context.getAttribute("orders");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Order newOrder;
+
+        try (BufferedReader reader = req.getReader()) {
+            newOrder = objectMapper.readValue(reader, Order.class);  //deserialize json into Order object
+        } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("{ \"error\": \"Empty or null JSON\" }");
+            resp.getWriter().write("{ \"error\": \"Invalid JSON format\" }");
             return;
         }
 
-        // Parse the JSON string into a Map
-        Map<String, String> parsedData = parseJsonToMap(inputJson.trim());
-
-        String orderNumber = parsedData.get("orderNumber");
-
-        if (orderNumber == null || orderNumber.isEmpty()) {
+        if (newOrder.getOrderNumber() == null || newOrder.getOrderNumber().isEmpty()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             resp.getWriter().write("{ \"error\": \"Invalid or missing orderNumber\" }");
             return;
         }
 
         long newOrderId = ID_GENERATOR.incrementAndGet();
+        newOrder.setId(newOrderId);  // Set the generated ID for the new order
 
-        StringBuilder jsonResponse = new StringBuilder("{ \"id\": \"" + newOrderId + "\"");
+        orders.put(newOrderId, newOrder);  // Store the new order in the map
 
-        for (Map.Entry<String, String> entry : parsedData.entrySet()) {
-            if (entry.getKey().equals("orderNumber")) {
-                jsonResponse.append(", \"").append(entry.getKey()).append("\": \"").append(entry.getValue()).append("\"");
-            }
-        }
-        jsonResponse.append(" }");
-
+        // Return the newly created order in JSON format
         resp.setContentType("application/json");
         resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write(jsonResponse.toString());
+        resp.getWriter().write(objectMapper.writeValueAsString(newOrder));
     }
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        ServletContext context = getServletContext();
+        Map<Long, Order> orders = (Map<Long, Order>) context.getAttribute("orders");
+
+        String idParam = req.getParameter("id");
+
+        if (idParam == null || idParam.trim().isEmpty()) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{ \"error\": \"Missing 'id' parameter\" }");
+            return;
+        }
+
+        long orderId;
+        try {
+            orderId = Long.parseLong(idParam);
+        } catch (NumberFormatException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{ \"error\": \"Invalid 'id' parameter format\" }");
+            return;
+        }
+
+        Order order = orders.get(orderId);
+
+        if (order == null) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            resp.getWriter().write("{ \"error\": \"Order not found\" }");
+        } else {
+            ObjectMapper objectMapper = new ObjectMapper();
+            resp.setContentType("application/json");
+            resp.setStatus(HttpServletResponse.SC_OK);
+            resp.getWriter().write(objectMapper.writeValueAsString(order));  // Serialize the order to JSON
+        }
+    }
+
+
 
     private Map<String, String> parseJsonToMap(String json) {
 
