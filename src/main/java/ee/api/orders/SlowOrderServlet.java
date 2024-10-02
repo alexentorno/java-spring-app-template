@@ -19,7 +19,7 @@ public class SlowOrderServlet extends HttpServlet {
         DataSource pool = new ConnectionPoolFactory().createConnectionPool();
 
         try (Connection conn = pool.getConnection()) {
-            printPoolInfo(pool);
+//            printPoolInfo(pool);
 
             Thread.sleep(1000);
 
@@ -29,14 +29,14 @@ public class SlowOrderServlet extends HttpServlet {
         }
     }
 
-    private static void printPoolInfo(DataSource dataSource) {
-        if (!(dataSource instanceof BasicDataSource)) {
-            throw new IllegalArgumentException("argument must be BasicDataSource");
-        }
-
-        BasicDataSource pool = (BasicDataSource) dataSource;
-
-        System.out.printf("active: %s; idle: %s\n",
-                pool.getNumActive(), pool.getNumIdle());
-    }
+//    private static void printPoolInfo(DataSource dataSource) {
+//        if (!(dataSource instanceof BasicDataSource)) {
+//            throw new IllegalArgumentException("argument must be BasicDataSource");
+//        }
+//
+//        BasicDataSource pool = (BasicDataSource) dataSource;
+//
+//        System.out.printf("active: %s; idle: %s\n",
+//                pool.getNumActive(), pool.getNumIdle());
+//    }
 }
