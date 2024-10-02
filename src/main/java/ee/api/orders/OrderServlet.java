@@ -30,7 +30,9 @@ public class OrderServlet extends HttpServlet {
 
         newOrder = deserializeJsonIntoOrder(req, resp, objectMapper);
 
-        if (newOrder == null) return;
+        if (newOrder == null) {
+            return;
+        }
 
         if (newOrder.getOrderNumber() == null || newOrder.getOrderNumber().isEmpty()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
