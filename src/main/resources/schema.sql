@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS orders;
+
+DROP SEQUENCE IF EXISTS ordersSeq;
+
+CREATE SEQUENCE ordersSeq START WITH 1;
+
+CREATE TABLE orders (
+    id BIGINT NOT NULL PRIMARY KEY DEFAULT nextval('ordersSeq'),
+    order_number VARCHAR(255) NOT NULL
+);

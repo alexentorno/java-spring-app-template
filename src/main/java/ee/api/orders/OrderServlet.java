@@ -7,47 +7,34 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import util.ConnectionPoolFactory;
 
+import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 
 @WebServlet("/api/orders")
 public class OrderServlet extends HttpServlet {
 
-    private static final AtomicLong ID_GENERATOR = new AtomicLong(0);
-
-    private Object ordersFromContext;
-
-    @Override
-    public void init() throws ServletException {
-        ServletContext context = getServletContext();
-        ordersFromContext = context.getAttribute("orders");
-        if (ordersFromContext == null) {
-            context.setAttribute("orders", new HashMap<Long, Order>());
-        }
-    }
-
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        //get context
-        ServletContext context = getServletContext();
-        //find orders
-        Map<Long, Order> ordersMap = (Map<Long, Order>) ordersFromContext;
+
+        DataSource pool = new ConnectionPoolFactory().createConnectionPool();
+
+        OrderDao orderDao = new OrderDao(pool);
 
         ObjectMapper objectMapper = new ObjectMapper();
         Order newOrder;
 
-        try (BufferedReader reader = req.getReader()) {
-            newOrder = objectMapper.readValue(reader, Order.class);  //deserialize json into Order object
-        } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("{ \"error\": \"Invalid JSON format\" }");
-            return;
-        }
+        newOrder = deserializeJsonIntoOrder(req, resp, objectMapper);
+
+        if (newOrder == null) return;
 
         if (newOrder.getOrderNumber() == null || newOrder.getOrderNumber().isEmpty()) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -55,72 +42,71 @@ public class OrderServlet extends HttpServlet {
             return;
         }
 
-        long newOrderId = ID_GENERATOR.incrementAndGet();
-        newOrder.setId(newOrderId);  // Set the generated ID for the new order
+        tryInsertOrder(resp, orderDao, newOrder, objectMapper);
 
-        ordersMap.put(newOrderId, newOrder);  // Store the new order in the map
-
-        // Return the newly created order in JSON format
-        resp.setContentType("application/json");
-        resp.setStatus(HttpServletResponse.SC_OK);
-        resp.getWriter().write(objectMapper.writeValueAsString(newOrder));
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        ServletContext context = getServletContext();
-        Map<Long, Order> orders = (Map<Long, Order>) ordersFromContext;
+        DataSource pool = new ConnectionPoolFactory().createConnectionPool();
+        OrderDao orderDao = new OrderDao(pool);
 
+        // Retrieve the `id` parameter if it exists
         String idParam = req.getParameter("id");
 
-        if (idParam == null || idParam.trim().isEmpty()) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("{ \"error\": \"Missing 'id' parameter\" }");
-            return;
-        }
+        ObjectMapper objectMapper = new ObjectMapper();
 
-        long orderId;
-        try {
-            orderId = Long.parseLong(idParam);
-        } catch (NumberFormatException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("{ \"error\": \"Invalid 'id' parameter format\" }");
-            return;
-        }
+        // If `id` parameter is present, return the order with that ID
+        if (idParam != null && !idParam.isEmpty()) {
+            try {
+                long orderId = Long.parseLong(idParam);
+                Order order = orderDao.findOrderWithId(orderId);
 
-        Order order = orders.get(orderId);
-
-        if (order == null) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            resp.getWriter().write("{ \"error\": \"Order not found\" }");
+                if (order == null) {
+                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    resp.getWriter().write("{ \"error\": \"Order not found\" }");
+                } else {
+                    resp.setContentType("application/json");
+                    resp.setStatus(HttpServletResponse.SC_OK);
+                    resp.getWriter().write(objectMapper.writeValueAsString(order));
+                }
+            } catch (NumberFormatException e) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("{ \"error\": \"Invalid order ID format\" }");
+            }
         } else {
-            ObjectMapper objectMapper = new ObjectMapper();
+            // If `id` parameter is not provided, return all orders
+            List<Order> orders = orderDao.findOrders();
             resp.setContentType("application/json");
             resp.setStatus(HttpServletResponse.SC_OK);
-            resp.getWriter().write(objectMapper.writeValueAsString(order));  // Serialize the order to JSON
+            resp.getWriter().write(objectMapper.writeValueAsString(orders));
         }
     }
 
 
+    private static void tryInsertOrder(HttpServletResponse resp, OrderDao orderDao, Order newOrder, ObjectMapper objectMapper) throws IOException {
+        try {
+            orderDao.insertOrder(newOrder);
 
-    private Map<String, String> parseJsonToMap(String json) {
-
-        json = json.trim().substring(1, json.length() - 1).trim();
-
-        String[] keyValuePairs = json.split(",");
-
-        Map<String, String> dataMap = new HashMap<>();
-
-        // Process each key-value pair
-        for (String pair : keyValuePairs) {
-            String[] keyValue = pair.split(":");
-            if (keyValue.length == 2) {
-                String key = keyValue[0].replace("\"", "").trim();
-                String value = keyValue[1].replace("\"", "").trim();
-                dataMap.put(key, value);
-            }
+            resp.setContentType("application/json");
+            resp.setStatus(HttpServletResponse.SC_OK);
+            resp.getWriter().write(objectMapper.writeValueAsString(newOrder));
+        } catch (SQLException e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{ \"error\": \"Database error\" }");
+            throw new RuntimeException(e);
         }
+    }
 
-        return dataMap;
+    private static Order deserializeJsonIntoOrder(HttpServletRequest req, HttpServletResponse resp, ObjectMapper objectMapper) throws IOException {
+        Order newOrder;
+        try (BufferedReader reader = req.getReader()) {
+            newOrder = objectMapper.readValue(reader, Order.class);
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{ \"error\": \"Invalid JSON format\" }");
+            return null;
+        }
+        return newOrder;
     }
 }

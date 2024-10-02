@@ -15,4 +15,9 @@ public class Order {
     private long id;
     private String orderNumber;
     private List<OrderRow> orderRows;
+
+    public Order (long id, String orderNumber) {
+        this.id = id;
+        this.orderNumber = orderNumber;
+    }
 }
