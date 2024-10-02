@@ -31,12 +31,9 @@ public class AppContextListener implements ServletContextListener {
         try (Connection conn = getConnection(); Statement stmt = conn.createStatement()) {
 
             String s1 = FileUtil.readFileFromClasspath("schema.sql");
-            //String s2 = FileUtil.readFileFromClasspath("data.sql");
 
             stmt.executeUpdate(s1);
 
-            System.out.println("Executed");
-            //stmt.executeUpdate(s2);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

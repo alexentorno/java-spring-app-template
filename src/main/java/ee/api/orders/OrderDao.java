@@ -64,20 +64,19 @@ public class OrderDao {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-            // Set the order number
+            //Set the order number
             ps.setString(1, order.getOrderNumber());
 
-            // Execute the insert operation
             int affectedRows = ps.executeUpdate();
 
             if (affectedRows == 0) {
                 throw new SQLException("Creating order failed, no rows affected.");
             }
 
-            // Retrieve the generated ID
+            //Retrieve the generated ID
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    // Assign the generated ID to the order object
+                    //Assign the generated ID to the order object
                     order.setId(rs.getLong(1));
                 } else {
                     throw new SQLException("Creating order failed, no ID obtained.");

@@ -1,7 +1,6 @@
 package ee.api.orders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,9 +11,6 @@ import util.ConnectionPoolFactory;
 import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -56,7 +52,7 @@ public class OrderServlet extends HttpServlet {
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        // If `id` parameter is present, return the order with that ID
+        //If 'id' parameter is present, return the order with that ID
         if (idParam != null && !idParam.isEmpty()) {
             try {
                 long orderId = Long.parseLong(idParam);
@@ -75,7 +71,7 @@ public class OrderServlet extends HttpServlet {
                 resp.getWriter().write("{ \"error\": \"Invalid order ID format\" }");
             }
         } else {
-            // If `id` parameter is not provided, return all orders
+            //If 'id' parameter is not provided, return all orders
             List<Order> orders = orderDao.findOrders();
             resp.setContentType("application/json");
             resp.setStatus(HttpServletResponse.SC_OK);
