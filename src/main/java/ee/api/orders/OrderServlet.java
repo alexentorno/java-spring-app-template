@@ -113,7 +113,6 @@ public class OrderServlet extends HttpServlet {
 
     private void handleDatabaseError(HttpServletResponse resp, SQLException e) throws IOException {
         sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
-        e.printStackTrace();  // Consider logging this to a file or monitoring system
     }
 
     private boolean isInvalidOrderNumber(String orderNumber) {
