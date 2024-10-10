@@ -10,7 +10,15 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderRow {
+    private Long id;
+    private Long orderId;
     private String itemName;
     private int quantity;
-    private int price;
+    private double price;
+
+    public OrderRow(String itemName, int quantity, double price) {
+        this.itemName = itemName;
+        this.quantity = quantity;
+        this.price = price;
+    }
 }

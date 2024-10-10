@@ -20,4 +20,11 @@ public class Order {
         this.id = id;
         this.orderNumber = orderNumber;
     }
+
+    public void addOrderRow(OrderRow row) {
+        if (orderRows == null) {
+            orderRows = new java.util.ArrayList<>();
+        }
+        orderRows.add(row);
+    }
 }

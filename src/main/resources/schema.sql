@@ -1,10 +1,22 @@
-DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS order_rows CASCADE;
 
-DROP SEQUENCE IF EXISTS ordersSeq;
+DROP SEQUENCE IF EXISTS ordersSeq CASCADE;
+DROP SEQUENCE IF EXISTS orderLinesSeq CASCADE;
 
 CREATE SEQUENCE ordersSeq START WITH 1;
+CREATE SEQUENCE orderLinesSeq START WITH 1;
 
 CREATE TABLE orders (
     id BIGINT NOT NULL PRIMARY KEY DEFAULT nextval('ordersSeq'),
     order_number VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE order_rows (
+     id BIGINT NOT NULL PRIMARY KEY DEFAULT nextval('orderLinesSeq'),
+     order_id BIGINT NOT NULL,
+     item_name VARCHAR(255) NOT NULL,
+     quantity INT NOT NULL,
+     price DECIMAL(10, 2) NOT NULL,
+     FOREIGN KEY (order_id) REFERENCES orders(id)
 );

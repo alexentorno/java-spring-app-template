@@ -1,7 +1,6 @@
 package ee.api.orders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,97 +13,110 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-
 @WebServlet("/api/orders")
 public class OrderServlet extends HttpServlet {
+    private OrderDao orderDao;
+    private ObjectMapper objectMapper;
+
+    @Override
+    public void init() {
+        DataSource dataSource = new ConnectionPoolFactory().createConnectionPool();
+        orderDao = new OrderDao(dataSource);
+        objectMapper = new ObjectMapper(); // Initialize once
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        Order newOrder = deserializeJsonIntoOrder(req, resp);
 
-        DataSource pool = new ConnectionPoolFactory().createConnectionPool();
+        if (newOrder == null) { return; }
 
-        OrderDao orderDao = new OrderDao(pool);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        Order newOrder;
-
-        newOrder = deserializeJsonIntoOrder(req, resp, objectMapper);
-
-        if (newOrder == null) {
+        if (isInvalidOrderNumber(newOrder.getOrderNumber())) {
+            sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid or missing orderNumber");
             return;
         }
 
-        if (newOrder.getOrderNumber() == null || newOrder.getOrderNumber().isEmpty()) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("{ \"error\": \"Invalid or missing orderNumber\" }");
-            return;
+        try {
+            orderDao.insertOrder(newOrder);
+            sendJsonResponse(resp, HttpServletResponse.SC_CREATED, newOrder);
+        } catch (SQLException e) {
+            handleDatabaseError(resp, e);
         }
-
-        tryInsertOrder(resp, orderDao, newOrder, objectMapper);
-
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        DataSource pool = new ConnectionPoolFactory().createConnectionPool();
-        OrderDao orderDao = new OrderDao(pool);
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String orderIdParam = req.getParameter("id");
 
-        // Retrieve the `id` parameter if it exists
-        String idParam = req.getParameter("id");
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        //If 'id' parameter is present, return the order with that ID
-        if (idParam != null && !idParam.isEmpty()) {
+        if (orderIdParam != null && !orderIdParam.isEmpty()) {
             try {
-                long orderId = Long.parseLong(idParam);
+                long orderId = Long.parseLong(orderIdParam);
                 Order order = orderDao.findOrderWithId(orderId);
-
                 if (order == null) {
-                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    resp.getWriter().write("{ \"error\": \"Order not found\" }");
+                    sendErrorResponse(resp, HttpServletResponse.SC_NOT_FOUND, "Order not found");
                 } else {
-                    resp.setContentType("application/json");
-                    resp.setStatus(HttpServletResponse.SC_OK);
-                    resp.getWriter().write(objectMapper.writeValueAsString(order));
+                    sendJsonResponse(resp, HttpServletResponse.SC_OK, order);
                 }
             } catch (NumberFormatException e) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("{ \"error\": \"Invalid order ID format\" }");
+                sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid order ID format");
             }
         } else {
-            //If 'id' parameter is not provided, return all orders
-            List<Order> orders = orderDao.findOrders();
-            resp.setContentType("application/json");
-            resp.setStatus(HttpServletResponse.SC_OK);
-            resp.getWriter().write(objectMapper.writeValueAsString(orders));
+            List<Order> orders = orderDao.findAllOrders();
+            sendJsonResponse(resp, HttpServletResponse.SC_OK, orders);
         }
     }
 
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String orderIdParam = req.getParameter("id");
 
-    private static void tryInsertOrder(HttpServletResponse resp, OrderDao orderDao, Order newOrder, ObjectMapper objectMapper) throws IOException {
+        if (orderIdParam == null || orderIdParam.isEmpty()) {
+            sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Missing order ID");
+            return;
+        }
+
+        tryDeleteOrder(resp, orderIdParam);
+    }
+
+    private void tryDeleteOrder(HttpServletResponse resp, String idParam) throws IOException {
         try {
-            orderDao.insertOrder(newOrder);
-
-            resp.setContentType("application/json");
-            resp.setStatus(HttpServletResponse.SC_OK);
-            resp.getWriter().write(objectMapper.writeValueAsString(newOrder));
+            long orderId = Long.parseLong(idParam);
+            orderDao.deleteOrderWithId(orderId);
+            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
         } catch (SQLException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().write("{ \"error\": \"Database error\" }");
-            throw new RuntimeException(e);
+            handleDatabaseError(resp, e);
+        } catch (NumberFormatException e) {
+            sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid order ID format");
         }
     }
 
-    private static Order deserializeJsonIntoOrder(HttpServletRequest req, HttpServletResponse resp, ObjectMapper objectMapper) throws IOException {
-        Order newOrder;
+    private Order deserializeJsonIntoOrder(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try (BufferedReader reader = req.getReader()) {
-            newOrder = objectMapper.readValue(reader, Order.class);
+            return objectMapper.readValue(reader, Order.class);
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("{ \"error\": \"Invalid JSON format\" }");
+            sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON format");
             return null;
         }
-        return newOrder;
+    }
+
+    private void sendJsonResponse(HttpServletResponse resp, int statusCode, Object data) throws IOException {
+        resp.setContentType("application/json");
+        resp.setStatus(statusCode);
+        resp.getWriter().write(objectMapper.writeValueAsString(data));
+    }
+
+    private void sendErrorResponse(HttpServletResponse resp, int statusCode, String message) throws IOException {
+        resp.setContentType("application/json");
+        resp.setStatus(statusCode);
+        resp.getWriter().write("{ \"error\": \"" + message + "\" }");
+    }
+
+    private void handleDatabaseError(HttpServletResponse resp, SQLException e) throws IOException {
+        sendErrorResponse(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error");
+        e.printStackTrace();  // Consider logging this to a file or monitoring system
+    }
+
+    private boolean isInvalidOrderNumber(String orderNumber) {
+        return orderNumber == null || orderNumber.isEmpty();
     }
 }
