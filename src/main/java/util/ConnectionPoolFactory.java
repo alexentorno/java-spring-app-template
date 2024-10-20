@@ -1,6 +1,11 @@
 package util;
 
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -12,6 +17,7 @@ public class ConnectionPoolFactory {
         if (pool == null) {
             synchronized (ConnectionPoolFactory.class) {
                 if (pool == null) {
+                    System.out.println("POOL");
                     pool = new BasicDataSource();
                     ConnectionInfo connectionInfo = ConfigUtil.readConnectionInfo();
                     pool.setDriverClassName("org.postgresql.Driver");

@@ -7,10 +7,38 @@ repositories {
     mavenCentral()
 }
 
+def springVersion = '6.1.13'
+def log4jVersion = '2.23.1'
+def lombokVersion = '1.18.34'
+def hsqldbVersion = '2.7.3'
+def aspectjWeaverVersion = '1.9.22'
+def postgresVersion = '42.7.3'
+
 dependencies {
+
+    implementation group: 'org.springframework',
+            name: 'spring-context',
+            version: springVersion
+
+    implementation group: 'org.springframework',
+            name: 'spring-jdbc',
+            version: springVersion
+
+    implementation group: 'org.springframework',
+            name: 'spring-aop',
+            version: springVersion
+
+    implementation group: 'org.aspectj',
+            name: 'aspectjweaver',
+            version: aspectjWeaverVersion
+
     implementation group: 'org.postgresql',
             name: 'postgresql',
-            version: '42.7.3'
+            version: postgresVersion
+
+    implementation group: 'org.hsqldb',
+            name: 'hsqldb',
+            version: hsqldbVersion
 
     implementation group: 'org.apache.commons',
             name: 'commons-dbcp2',
@@ -19,11 +47,11 @@ dependencies {
 
     implementation group: 'org.apache.logging.log4j',
             name: 'log4j-api',
-            version: '2.23.1'
+            version: log4jVersion
 
     implementation group: 'org.apache.logging.log4j',
             name: 'log4j-core',
-            version: '2.23.1'
+            version: log4jVersion
 
     compileOnly group: 'jakarta.servlet',
             name: 'jakarta.servlet-api',
@@ -31,11 +59,11 @@ dependencies {
 
     compileOnly group: 'org.projectlombok',
             name: 'lombok',
-            version: '1.18.34'
+            version: lombokVersion
 
     annotationProcessor group: 'org.projectlombok',
             name: 'lombok',
-            version: '1.18.34'
+            version: lombokVersion
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.5'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.5'

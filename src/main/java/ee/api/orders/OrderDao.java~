@@ -20,18 +20,21 @@ public class OrderDao {
     }
 
     public List<Order> findAllOrders() {
+        System.out.println("finding all orders");
         String query = "SELECT o.id AS order_id, o.order_number, r.item_name, r.quantity, r.price " +
                 "FROM orders o LEFT JOIN order_rows r ON o.id = r.order_id";
 
         var handler = new OrderRowHandler();
         jdbcClient.sql(query).query(handler);
         return handler.getResult();
+
     }
 
 
 
     public Order findOrderWithId(Long id) {
 
+        System.out.println("Finding order with id: " + id);
 
         String query = "SELECT o.id AS order_id, o.order_number, r.item_name, r.quantity, r.price " +
                 "FROM orders o LEFT JOIN order_rows r ON o.id = r.order_id WHERE o.id = ?";
@@ -44,15 +47,19 @@ public class OrderDao {
 
 
         List<Order> orders = handler.getResult();
+        System.out.println(orders.stream().count());
         return orders.isEmpty() ? null : orders.getFirst();
     }
 
 
     public void insertOrder(Order order) throws SQLException {
+        System.out.println("inserting order");
         String orderQuery = "INSERT INTO orders (order_number) VALUES (?);";
 
         KeyHolder kh = new GeneratedKeyHolder();
 
+//        System.out.println("Inserting Order: " + order.getId());
+//        System.out.println("Generated key: " + kh.getKey());
 
         jdbcClient.sql(orderQuery)
                 .param(1, order.getOrderNumber())
@@ -71,6 +78,8 @@ public class OrderDao {
     }
 
     private void insertOrderRow(Long orderId, OrderRow row) {
+        System.out.println("Inserting order row");
+        System.out.println("Order id for row: " + orderId);
 
         String query = "INSERT INTO order_rows (order_id, item_name, quantity, price) VALUES (?, ?, ?, ?);";
 

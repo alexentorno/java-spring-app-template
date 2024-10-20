@@ -1,13 +1,15 @@
 package ee.api.orders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ee.AppContextListener;
+import ee.api.orders.validation.ValidationError;
+import ee.api.orders.validation.ValidationErrors;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import util.ConnectionPoolFactory;
-
-import javax.sql.DataSource;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -20,19 +22,25 @@ public class OrderServlet extends HttpServlet {
 
     @Override
     public void init() {
-        DataSource dataSource = new ConnectionPoolFactory().createConnectionPool();
-        orderDao = new OrderDao(dataSource);
-        objectMapper = new ObjectMapper(); // Initialize once
+        var ctx = new AnnotationConfigApplicationContext(
+                AppContextListener.class);
+
+        JdbcClient jdbcClient = ctx.getBean(JdbcClient.class);
+        orderDao = new OrderDao(jdbcClient);
+
+        objectMapper = new ObjectMapper();
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         Order newOrder = deserializeJsonIntoOrder(req, resp);
 
-        if (newOrder == null) { return; }
+        if (newOrder == null) {
+            return;
+        }
 
         if (isInvalidOrderNumber(newOrder.getOrderNumber())) {
-            sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid or missing orderNumber");
+            sendValidationErrorResponse(resp, "too_short_number");
             return;
         }
 
@@ -43,6 +51,7 @@ public class OrderServlet extends HttpServlet {
             handleDatabaseError(resp, e);
         }
     }
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -93,6 +102,9 @@ public class OrderServlet extends HttpServlet {
     private Order deserializeJsonIntoOrder(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try (BufferedReader reader = req.getReader()) {
             return objectMapper.readValue(reader, Order.class);
+            //        or
+            //        String body = readStream(req.getInputStream());
+            //        return objectmapper.readValue(body, Order.class);
         } catch (Exception e) {
             sendErrorResponse(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON format");
             return null;
@@ -103,6 +115,10 @@ public class OrderServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setStatus(statusCode);
         resp.getWriter().write(objectMapper.writeValueAsString(data));
+        //or
+        // response.getWriter().print(sum); if data is primitive
+        // or
+        // mapper.writeValue(response.getWriter(), data);
     }
 
     private void sendErrorResponse(HttpServletResponse resp, int statusCode, String message) throws IOException {
@@ -116,6 +132,15 @@ public class OrderServlet extends HttpServlet {
     }
 
     private boolean isInvalidOrderNumber(String orderNumber) {
-        return orderNumber == null || orderNumber.isEmpty();
+        return orderNumber == null || orderNumber.length() < 2;
+    }
+
+    private void sendValidationErrorResponse(HttpServletResponse resp, String errorCode) throws IOException {
+        ValidationError error = new ValidationError(errorCode);
+        ValidationErrors validationErrors = new ValidationErrors(List.of(error));
+
+        resp.setContentType("application/json");
+        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        resp.getWriter().write(objectMapper.writeValueAsString(validationErrors));
     }
 }
