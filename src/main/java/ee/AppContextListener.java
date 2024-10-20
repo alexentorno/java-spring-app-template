@@ -31,15 +31,12 @@ public class AppContextListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-//        ConnectionInfo connectionInfo = getConnectionInfo();
-//        System.out.println("Connecting to HSQLDB with URL: " + connectionInfo.getUrl());
 
         ApplicationContext context = new AnnotationConfigApplicationContext(AppContextListener.class);
         DataSource dataSource = context.getBean(DataSource.class);
 
         var populator = new ResourceDatabasePopulator(new ClassPathResource("schema.sql"));
         DatabasePopulatorUtils.execute(populator, dataSource);
-        System.out.println("Schema created");
     }
 
 
@@ -54,7 +51,6 @@ public class AppContextListener implements ServletContextListener {
 
         ds.setDriverClassName("org.hsqldb.jdbcDriver");
         ds.setUrl(env.getProperty("hsql.url"));
-        System.out.println("Url: " + ds.getUrl());
 
         return ds;
 
