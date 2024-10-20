@@ -16,26 +16,15 @@ public class SlowOrderServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        DataSource pool = new ConnectionPoolFactory().createConnectionPool();
 
-        try (Connection conn = pool.getConnection()) {
+        try {
 //            System.out.println("Got a connection from the pool");
 //            printPoolInfo(pool);
             Thread.sleep(1000);
-        } catch (SQLException | InterruptedException e) {
+        } catch (InterruptedException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().write("{ \"error\": \"Internal Server Error\" }");
         }
     }
 
-//    private static void printPoolInfo(DataSource dataSource) {
-//        if (!(dataSource instanceof BasicDataSource)) {
-//            throw new IllegalArgumentException("argument must be BasicDataSource");
-//        }
-//
-//        BasicDataSource pool = (BasicDataSource) dataSource;
-//
-//        System.out.printf("active: %s; idle: %s\n",
-//                pool.getNumActive(), pool.getNumIdle());
-//    }
 }
