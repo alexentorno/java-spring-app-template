@@ -14,9 +14,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
-import util.ConfigUtil;
-import util.ConnectionInfo;
-import util.FileUtil;
+
 
 import javax.sql.DataSource;
 
@@ -24,10 +22,6 @@ import javax.sql.DataSource;
 @ComponentScan(basePackages = "ee.api.orders")
 @PropertySource("classpath:application.properties")
 public class AppContextListener implements ServletContextListener {
-
-    private static ConnectionInfo getConnectionInfo() {
-        return ConfigUtil.readConnectionInfo();
-    }
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
@@ -53,14 +47,5 @@ public class AppContextListener implements ServletContextListener {
         ds.setUrl(env.getProperty("hsql.url"));
 
         return ds;
-
-//        System.out.println("postgres");
-//        DriverManagerDataSource ds = new DriverManagerDataSource();
-//        ds.setDriverClassName("org.postgresql.Driver");
-//        ds.setUsername(env.getProperty("postgres.user"));
-//        ds.setPassword(env.getProperty("postgres.pass"));
-//        ds.setUrl(env.getProperty("postgres.url"));
-//
-//        return ds;
     }
 }
