@@ -11,8 +11,6 @@ import java.util.List;
 @Repository
 public class OrderDao {
 
-    //private final DataSource dataSource;
-
     private JdbcClient jdbcClient;
 
     public OrderDao(JdbcClient jdbcClient) {
@@ -20,7 +18,7 @@ public class OrderDao {
     }
 
     public List<Order> findAllOrders() {
-        String query = "SELECT o.id AS order_id, o.order_number, r.item_name, r.quantity, r.price " +
+        String query = "SELECT o.id AS order_id, o.order_number, r.id AS order_row_id, r.item_name, r.quantity, r.price " +
                 "FROM orders o LEFT JOIN order_rows r ON o.id = r.order_id";
 
         var handler = new OrderRowHandler();
@@ -31,9 +29,7 @@ public class OrderDao {
 
 
     public Order findOrderWithId(Long id) {
-
-
-        String query = "SELECT o.id AS order_id, o.order_number, r.item_name, r.quantity, r.price " +
+        String query = "SELECT o.id AS order_id, o.order_number, r.id AS order_row_id, r.item_name, r.quantity, r.price " +
                 "FROM orders o LEFT JOIN order_rows r ON o.id = r.order_id WHERE o.id = ?";
 
         var handler = new OrderRowHandler();
@@ -42,23 +38,21 @@ public class OrderDao {
                 .param(id)
                 .query(handler);
 
-
         List<Order> orders = handler.getResult();
-        return orders.isEmpty() ? null : orders.getFirst();
+        return orders.isEmpty() ? null : handler.getSingleOrder();
     }
 
 
-    public void insertOrder(Order order) throws SQLException {
+    public Order insertOrder(Order order) throws SQLException {
         String orderQuery = "INSERT INTO orders (order_number) VALUES (?);";
 
         KeyHolder kh = new GeneratedKeyHolder();
-
-
         jdbcClient.sql(orderQuery)
                 .param(1, order.getOrderNumber())
                 .update(kh, "id");
 
-        Long orderId = kh.getKey().longValue();  // Get the generated order ID
+        Long orderId = kh.getKey().longValue();
+
         order.setId(orderId);
 
         if (order.getOrderRows() != null) {
@@ -66,12 +60,10 @@ public class OrderDao {
                 insertOrderRow(kh.getKey().longValue(), row);
             }
         }
-
-
+        return order;
     }
 
     private void insertOrderRow(Long orderId, OrderRow row) {
-
         String query = "INSERT INTO order_rows (order_id, item_name, quantity, price) VALUES (?, ?, ?, ?);";
 
         KeyHolder kh = new GeneratedKeyHolder();
@@ -84,6 +76,7 @@ public class OrderDao {
                 .update(kh, "id");
 
         Long rowId = kh.getKey().longValue();
+
         row.setId(rowId);
         row.setOrderId(orderId);
     }

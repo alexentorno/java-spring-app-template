@@ -13,8 +13,22 @@ def lombokVersion = '1.18.34'
 def hsqldbVersion = '2.7.3'
 def aspectjWeaverVersion = '1.9.22'
 def postgresVersion = '42.7.3'
+def hibernateValidatorVersion = '8.0.1.Final'
+def jacksonDataTypeVersion = '2.17.2'
 
 dependencies {
+
+    implementation group: 'jakarta.validation',
+            name: 'jakarta.validation-api',
+            version: '3.1.0'
+
+    implementation group: 'org.hibernate',
+            name: 'hibernate-validator',
+            version: hibernateValidatorVersion
+
+    implementation group: 'org.springframework',
+            name: 'spring-webmvc',
+            version: springVersion
 
     implementation group: 'org.springframework',
             name: 'spring-context',
@@ -64,6 +78,10 @@ dependencies {
     annotationProcessor group: 'org.projectlombok',
             name: 'lombok',
             version: lombokVersion
+
+    implementation group: 'com.fasterxml.jackson.datatype',
+            name: 'jackson-datatype-jsr310',
+            version: jacksonDataTypeVersion
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.5'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.5'

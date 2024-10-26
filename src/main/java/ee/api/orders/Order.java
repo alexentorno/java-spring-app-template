@@ -1,5 +1,9 @@
 package ee.api.orders;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.List;
@@ -8,8 +12,15 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Order {
+
+    @NotNull
     private long id;
+
+    @NotNull
+    @Size(min = 2)
     private String orderNumber;
+
+    @Valid
     private List<OrderRow> orderRows;
 
     public Order (long id, String orderNumber) {

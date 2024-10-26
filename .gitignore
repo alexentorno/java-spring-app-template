@@ -1,4 +1,12 @@
 node_modules/
+
+/out
+/build
+/.gradle
+/.idea
+*.iml
+
+
 dist/
 # Compiled Java class files
 *.class
@@ -29,3 +37,4 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+

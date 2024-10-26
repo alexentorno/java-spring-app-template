@@ -36,16 +36,18 @@ public class OrderRowHandler implements RowCallbackHandler {
 
         String itemName = rs.getString("item_name");
         if (itemName != null) {
+            long orderRowId = rs.getLong("order_row_id");
             int quantity = rs.getInt("quantity");
             double price = rs.getDouble("price");
-            OrderRow orderRow = new OrderRow(itemName, quantity, price);
+
+            OrderRow orderRow = new OrderRow(orderRowId, orderId, itemName, quantity, price);
             order.addOrderRow(orderRow);
         }
+
         result = new ArrayList<>(orderMap.values());
         if (orderMap.size() == 1) {
             singleOrder = result.getFirst();
         }
     }
-
 }
 
