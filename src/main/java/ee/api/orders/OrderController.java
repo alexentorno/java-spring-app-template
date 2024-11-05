@@ -1,6 +1,7 @@
 package ee.api.orders;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
@@ -10,6 +11,7 @@ import java.util.List;
 public class OrderController {
     private final OrderDao dao;
 
+    @Autowired
     public OrderController(OrderDao dao) {
         this.dao = dao;
     }
