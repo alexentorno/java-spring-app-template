@@ -1,22 +1,21 @@
-DROP TABLE IF EXISTS orders CASCADE;
-DROP TABLE IF EXISTS order_rows CASCADE;
+-- DROP SCHEMA PUBLIC CASCADE;
 
-DROP SEQUENCE IF EXISTS ordersSeq CASCADE;
-DROP SEQUENCE IF EXISTS orderLinesSeq CASCADE;
+DROP TABLE IF EXISTS order_rows;
+DROP TABLE IF EXISTS orders;
+DROP SEQUENCE IF EXISTS seq1;
 
-CREATE SEQUENCE ordersSeq START WITH 1;
-CREATE SEQUENCE orderLinesSeq START WITH 1;
+CREATE SEQUENCE seq1 AS INTEGER START WITH 1 INCREMENT BY 1;
 
 CREATE TABLE orders (
-    id BIGINT NOT NULL PRIMARY KEY DEFAULT nextval('ordersSeq'),
-    order_number VARCHAR(255) NOT NULL
+    id BIGINT NOT NULL PRIMARY KEY,
+    order_number VARCHAR(255)
 );
 
 CREATE TABLE order_rows (
-     id BIGINT NOT NULL PRIMARY KEY DEFAULT nextval('orderLinesSeq'),
-     order_id BIGINT NOT NULL,
-     item_name VARCHAR(255) NOT NULL,
-     quantity INT NOT NULL,
-     price DECIMAL(10, 2) NOT NULL,
-     FOREIGN KEY (order_id) REFERENCES orders(id)
+    item_name VARCHAR(255),
+    price INT,
+    quantity INT,
+    orders_id BIGINT,
+    FOREIGN KEY (orders_id)
+        REFERENCES orders(id) ON DELETE CASCADE
 );

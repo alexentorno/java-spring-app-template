@@ -1,33 +1,30 @@
 package ee.api.orders;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+@Embeddable
 @Data
+@Table(name = "order_rows")
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderRow {
 
+//    private Long orderId;
 
-    private Long id;
-
-    private Long orderId;
-
+    @Column(name = "order_name")
     @NotNull
     private String itemName;
 
     @NotNull
     @Min(1)
-    private int quantity;
+    private int price;
 
     @NotNull
     @Min(1)
-    private double price;
-
-    public OrderRow(String itemName, int quantity, double price) {
-        this.itemName = itemName;
-        this.quantity = quantity;
-        this.price = price;
-    }
+    private int quantity;
 }

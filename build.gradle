@@ -3,6 +3,10 @@ plugins {
     id 'org.gretty' version '4.1.5'
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+}
+
 repositories {
     mavenCentral()
 }
@@ -17,6 +21,14 @@ def hibernateValidatorVersion = '8.0.1.Final'
 def jacksonDataTypeVersion = '2.17.2'
 
 dependencies {
+
+    implementation group: 'org.hibernate',
+            name: 'hibernate-core',
+            version: '6.6.1.Final'
+
+    implementation group: 'org.springframework',
+            name: 'spring-orm',
+            version: '6.1.14'
 
     implementation group: 'jakarta.validation',
             name: 'jakarta.validation-api',
