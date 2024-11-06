@@ -24,6 +24,7 @@ import java.util.Properties;
 @Import(HsqlDataSource.class)
 public class DbConfig {
 
+
     @Bean
     public EntityManagerFactory entityManagerFactory(
             DataSource dataSource,
