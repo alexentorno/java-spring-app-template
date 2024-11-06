@@ -13,6 +13,7 @@ public class HsqlDataSource {
 
     @Bean
     public Server hsqlServer() {
+        System.out.println("SERVER STARTED RUNNING....");
         Server server = new Server();
         server.setDatabasePath(0, "mem:db1;sql.syntax_pgs=true");
         server.setDatabaseName(0, "db1");
