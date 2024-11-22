@@ -16,7 +16,7 @@ public class OrderRow {
 
 //    private Long orderId;
 
-    @Column(name = "order_name")
+    @Column(name = "item_name")
     @NotNull
     private String itemName;
 

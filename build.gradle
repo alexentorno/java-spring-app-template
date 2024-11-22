@@ -5,10 +5,16 @@ plugins {
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 repositories {
     mavenCentral()
+}
+
+compileJava {
+    options.compilerArgs << '-parameters'
+    // options.compilerArgs << '-g:none'
 }
 
 def springVersion = '6.1.13'
@@ -19,89 +25,55 @@ def aspectjWeaverVersion = '1.9.22'
 def postgresVersion = '42.7.3'
 def hibernateValidatorVersion = '8.0.1.Final'
 def jacksonDataTypeVersion = '2.17.2'
+def jsonWebTokenVersion = '0.12.6'
+def springSecurityVersion = '6.3.4'
+def jacksonVersion = '2.17.0'
 
 dependencies {
+    // Servlet API
+    compileOnly group: 'jakarta.servlet', name: 'jakarta.servlet-api', version: '6.1.0'
 
-    implementation group: 'org.hibernate',
-            name: 'hibernate-core',
-            version: '6.6.1.Final'
+    // Spring Framework
+    implementation group: 'org.springframework', name: 'spring-webmvc', version: springVersion
+    implementation group: 'org.springframework', name: 'spring-jdbc', version: springVersion
+    implementation group: 'org.springframework', name: 'spring-aop', version: springVersion
+    implementation group: 'org.springframework.security', name: 'spring-security-web', version: springSecurityVersion
+    implementation group: 'org.springframework.security', name: 'spring-security-config', version: springSecurityVersion
+    implementation group: 'org.springframework.security', name: 'spring-security-oauth2-client', version: springSecurityVersion
+    implementation group: 'org.springframework.security', name: 'spring-security-oauth2-jose', version: springSecurityVersion
+    implementation group: 'org.springframework', name: 'spring-orm', version: springVersion
 
-    implementation group: 'org.springframework',
-            name: 'spring-orm',
-            version: '6.1.14'
+    // Hibernate Validator
+    implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.1.0'
+    implementation group: 'org.hibernate', name: 'hibernate-validator', version: hibernateValidatorVersion
+    implementation group: 'org.hibernate', name: 'hibernate-core', version: '6.6.1.Final'
 
-    implementation group: 'jakarta.validation',
-            name: 'jakarta.validation-api',
-            version: '3.1.0'
+    // Logging
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4jVersion
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4jVersion
 
-    implementation group: 'org.hibernate',
-            name: 'hibernate-validator',
-            version: hibernateValidatorVersion
+    // JSON Processing
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonDataTypeVersion
 
-    implementation group: 'org.springframework',
-            name: 'spring-webmvc',
-            version: springVersion
+    // JSON Web Token
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: jsonWebTokenVersion
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-impl', version: jsonWebTokenVersion
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: jsonWebTokenVersion
 
-    implementation group: 'org.springframework',
-            name: 'spring-context',
-            version: springVersion
+    // Database
+    implementation group: 'org.postgresql', name: 'postgresql', version: postgresVersion
+    implementation group: 'org.hsqldb', name: 'hsqldb', version: hsqldbVersion
+    implementation group: 'org.apache.commons', name: 'commons-dbcp2', version: '2.12.0'
 
-    implementation group: 'org.springframework',
-            name: 'spring-jdbc',
-            version: springVersion
+    // Lombok
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: lombokVersion
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
-    implementation group: 'org.springframework',
-            name: 'spring-aop',
-            version: springVersion
-
-    implementation group: 'org.aspectj',
-            name: 'aspectjweaver',
-            version: aspectjWeaverVersion
-
-    implementation group: 'org.postgresql',
-            name: 'postgresql',
-            version: postgresVersion
-
-    implementation group: 'org.hsqldb',
-            name: 'hsqldb',
-            version: hsqldbVersion
-
-    implementation group: 'org.apache.commons',
-            name: 'commons-dbcp2',
-            version: '2.12.0'
-
-
-    implementation group: 'org.apache.logging.log4j',
-            name: 'log4j-api',
-            version: log4jVersion
-
-    implementation group: 'org.apache.logging.log4j',
-            name: 'log4j-core',
-            version: log4jVersion
-
-    compileOnly group: 'jakarta.servlet',
-            name: 'jakarta.servlet-api',
-            version: '6.1.0'
-
-    compileOnly group: 'org.projectlombok',
-            name: 'lombok',
-            version: lombokVersion
-
-    annotationProcessor group: 'org.projectlombok',
-            name: 'lombok',
-            version: lombokVersion
-
-    implementation group: 'com.fasterxml.jackson.datatype',
-            name: 'jackson-datatype-jsr310',
-            version: jacksonDataTypeVersion
-
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.5'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.13.5'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.5'
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_21
+    // AspectJ
+    implementation group: 'org.aspectj', name: 'aspectjweaver', version: aspectjWeaverVersion
 }
 
 gretty {
@@ -112,5 +84,3 @@ gretty {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
-
-

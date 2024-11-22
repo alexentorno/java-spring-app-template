@@ -5,9 +5,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 import javax.sql.DataSource;
 
+@EnableMethodSecurity
 @PropertySource("classpath:application.properties")
 public class HsqlDataSource {
 

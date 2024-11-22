@@ -1,5 +1,6 @@
 package ee.api.orders.config;
 
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,7 +23,12 @@ import java.util.Properties;
 @EnableTransactionManagement
 @PropertySource("classpath:application.properties")
 @Import(HsqlDataSource.class)
-public class DbConfig {
+public class Config {
+
+    @Bean
+    public EntityManager entityManager(EntityManagerFactory entityManagerFactory) {
+        return entityManagerFactory.createEntityManager();
+    }
 
 
     @Bean
@@ -31,7 +37,8 @@ public class DbConfig {
             @Qualifier("dialect") String  dialect) {
 
         var populator = new ResourceDatabasePopulator(
-                new ClassPathResource("schema.sql"));
+                new ClassPathResource("schema.sql"),
+                new ClassPathResource("data.sql"));
 
         DatabasePopulatorUtils.execute(populator, dataSource);
 
@@ -55,7 +62,7 @@ public class DbConfig {
 
     private Properties additionalProperties(String dialect) {
         Properties properties = new Properties();
-        properties.put("hibernate.hbm2ddl.auto", "create");
+        properties.put("hibernate.hbm2ddl.auto", "validate");
         properties.put("hibernate.dialect", dialect);
         properties.put("hibernate.show_sql", false);
         properties.put("hibernate.format_sql", true);

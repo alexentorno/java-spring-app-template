@@ -1,5 +1,7 @@
-package ee.api.orders;
+package ee.api.orders.controllers;
 
+import ee.api.orders.Order;
+import ee.api.orders.OrderDao;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

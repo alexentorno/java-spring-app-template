@@ -6,12 +6,15 @@ public class ApplicationInitializer extends AbstractAnnotationConfigDispatcherSe
 
     @Override
     protected Class<?>[] getRootConfigClasses() {
-        return new Class[]{DbConfig.class, HsqlDataSource.class};
+        return new Class[]{SecurityConfig.class,
+                            MvcConfig.class,
+                            Config.class,
+                            HsqlDataSource.class};
     }
 
     @Override
     protected Class<?>[] getServletConfigClasses() {
-        return new Class[]{DbConfig.class};
+        return new Class[]{Config.class};
     }
 
     //Kuhu kohta DispatcherServlet paigaldada
