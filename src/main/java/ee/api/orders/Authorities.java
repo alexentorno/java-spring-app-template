@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "authorities")
 @AllArgsConstructor
 @NoArgsConstructor
-public class Authority {
+public class Authorities {
 
     @NotNull
     private String authority;

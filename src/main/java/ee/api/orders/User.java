@@ -38,5 +38,5 @@ public class User {
     @CollectionTable(name = "authorities",
             joinColumns = @JoinColumn(name = "username",
                     referencedColumnName = "username"))
-    private List<Authority> authorities;
+    private List<Authorities> authorities;
 }
